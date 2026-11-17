@@ -1,4 +1,4 @@
-export const API = (import.meta.env.VITE_API_URL || "https://elysian-raiment-backend.onrender.com").replace(/\/+$/, "");
+export const API = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
 export async function api(path, { method = "GET", body } = {}) {
   let r;
