@@ -4,7 +4,7 @@
 
 // ---------- Brand ----------
 export const BRAND = {
-  name: "R-Garments",
+  name: "ELYSIAN RAIMENT",
   tagline: "Modern classic women's fashion",
   description:
     "Thoughtfully designed women's fashion from Bangladesh — modest wear, everyday essentials and festive sets crafted with care.",
