@@ -4,7 +4,7 @@ import { FaTachometerAlt, FaBoxOpen, FaTags, FaWarehouse, FaClipboardList, FaUse
 // ============================================================
 // API + helpers
 // ============================================================
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API = (import.meta.env.VITE_API_URL || "https://elysian-raiment-backend.onrender.com").replace(/\/+$/, "");
 let CSRF = "";
 const call = async (path, { method = "GET", body } = {}) => {
   const r = await fetch(`${API}/api/admin${path}`, { method, credentials: "include", headers: { ...(body ? { "Content-Type": "application/json" } : {}), "X-CSRF-Token": CSRF }, body: body ? JSON.stringify(body) : undefined });
