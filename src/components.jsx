@@ -154,7 +154,7 @@ function Navbar() {
       <header className={`fixed top-0 left-0 right-0 z-[60] h-16 bg-[#FFFCF7]/95 backdrop-blur border-b transition-all duration-300 ${scrolled ? "border-[#E8DDCA] shadow-sm" : "border-transparent"}`}>
         <Container className="h-full flex items-center justify-between">
           <button className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2" onClick={() => setDrawer(true)} aria-label="Open menu"><FaBars size={19} /></button>
-          <Link to="/" className="font-serif text-2xl tracking-tight absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
+          <Link to="/" className="font-serif text-xl tracking-tight absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
             {brand.logo ? <img src={brand.logo} alt={brand.name} className="h-9 object-contain" /> : brand.name}
           </Link>
           <nav className="hidden lg:flex items-center gap-9">
