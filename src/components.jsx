@@ -15,8 +15,8 @@ export function ProductCard({ p }) {
   const quick = p.sizes.length === 1 && p.colors.length === 1 ? { size: p.sizes[0], color: p.colors[0] } : null;
   const open = () => navigate(`/product/${p.slug}`);
   return (
-    <motion.article whileHover={{ y: -4 }} className="group bg-white border border-[#E8DDCA] flex flex-col h-full">
-      <Link to={`/product/${p.slug}`} className="relative block overflow-hidden aspect-[4/5] bg-[#FAF7F1]">
+    <motion.article whileHover={{ y: -4 }} className="group rounded-md bg-white border border-[#C5A653] flex flex-col h-full">
+      <Link to={`/product/${p.slug}`} className="relative rounded-t-md block overflow-hidden aspect-[4/5] bg-[#FAF7F1]">
         <Img src={p.images[0]} alt={p.name} className="w-full h-full transition-transform duration-700 group-hover:scale-105" />
         {p.images[1] && <Img src={p.images[1]} alt="" className="absolute inset-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:block" />}
         <div className="absolute top-2 left-2 flex flex-col gap-1">

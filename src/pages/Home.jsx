@@ -82,8 +82,8 @@ export default function Home() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {categories.map((c, n) => (
             <Reveal key={c.slug} delay={(n % 4) * 0.06}>
-              <Link to={`/category/${c.slug}`} className="group relative block aspect-[4/5] overflow-hidden bg-[#E8DDCA]">
-                <Img src={c.image} alt={c.name} className="w-full h-full transition-transform duration-700 group-hover:scale-110" />
+              <Link to={`/category/${c.slug}`} className="group rounded-sm relative block aspect-[4/5] overflow-hidden bg-[#E8DDCA]">
+                <Img src={c.image} alt={c.name} className="w-full h-full rounded-sm transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 p-4 text-white">
                   <h3 className="font-serif text-lg sm:text-2xl leading-tight">{c.name}</h3>
