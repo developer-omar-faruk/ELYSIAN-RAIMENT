@@ -86,8 +86,7 @@ export function Checkout() {
     const er = {};
     if (!f.name.trim()) er.name = "Please enter your full name.";
     if (!phoneOk(f.phone)) er.phone = "Enter a valid Bangladesh mobile number (e.g. 017XXXXXXXX).";
-    if (!f.email.trim()) er.email = "Please enter your email address.";
-    else if (!emailOk(f.email)) er.email = "Please enter a valid email address.";
+    if (f.email && !emailOk(f.email)) er.email = "Please enter a valid email address.";
     if (!f.address.trim()) er.address = "Please enter your delivery address.";
     if (!zone) er.zone = "Please select a delivery zone.";
     if (!lines.length) er.cart = "Your cart is empty.";
