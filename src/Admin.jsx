@@ -121,7 +121,7 @@ function printOrder(o, kind) {
   if (!w) return toast("Please allow pop-ups to print.", true);
   const inv = kind === "invoice";
   const rows = o.items.map((i) => `<tr><td>${esc(i.name)}<br><small>Size ${esc(i.size)}${i.color ? ` · ${esc(i.color)}` : ""}</small></td><td>${i.qty}</td>${inv ? `<td>${money(i.price)}</td><td>${money(i.price * i.qty)}</td>` : "<td>☐ packed</td>"}</tr>`).join("");
-  w.document.write(`<!doctype html><html><head><title>${inv ? "Invoice" : "Packing slip"} ${esc(o.id)}</title><style>body{font-family:Georgia,serif;color:#222;padding:32px;max-width:780px;margin:auto}table{width:100%;border-collapse:collapse;margin-top:18px}td,th{border-bottom:1px solid #ddd;padding:9px;text-align:left;font-size:14px}.r{text-align:right}small{color:#777}</style></head><body><h1>R-Garments</h1><p><b>${inv ? "INVOICE" : "PACKING SLIP"}</b> · ${esc(o.id)} · ${esc(fdate(o.createdAt))}</p><p><b>${esc(o.customer.name)}</b><br>${esc(o.customer.phone)}<br>${esc(o.address)}${o.area ? ", " + esc(o.area) : ""}<br>${esc(o.zone)}</p><table><tr><th>Item</th><th>Qty</th>${inv ? "<th>Price</th><th>Total</th>" : "<th></th>"}</tr>${rows}</table>${inv ? `<p class="r">Subtotal: ${money(o.subtotal)}<br>Discount: -${money(o.discount)}${o.coupon ? ` (${esc(o.coupon)})` : ""}<br>Delivery: ${money(o.deliveryFee)}<br><b>Total: ${money(o.total)}</b><br>${esc(o.payment)} · ${esc(o.paymentStatus)}</p>` : `<p>Customer note: ${esc(o.note) || "—"}</p><p>${esc(o.payment)} — collect ${o.paymentStatus === "Paid" ? "nothing (paid)" : money(o.total)}</p>`}</body></html>`);
+  w.document.write(`<!doctype html><html><head><title>${inv ? "Invoice" : "Packing slip"} ${esc(o.id)}</title><style>body{font-family:Georgia,serif;color:#222;padding:32px;max-width:780px;margin:auto}table{width:100%;border-collapse:collapse;margin-top:18px}td,th{border-bottom:1px solid #ddd;padding:9px;text-align:left;font-size:14px}.r{text-align:right}small{color:#777}</style></head><body><h1>Elysian-Raiment</h1><p><b>${inv ? "INVOICE" : "PACKING SLIP"}</b> · ${esc(o.id)} · ${esc(fdate(o.createdAt))}</p><p><b>${esc(o.customer.name)}</b><br>${esc(o.customer.phone)}<br>${esc(o.address)}${o.area ? ", " + esc(o.area) : ""}<br>${esc(o.zone)}</p><table><tr><th>Item</th><th>Qty</th>${inv ? "<th>Price</th><th>Total</th>" : "<th></th>"}</tr>${rows}</table>${inv ? `<p class="r">Subtotal: ${money(o.subtotal)}<br>Discount: -${money(o.discount)}${o.coupon ? ` (${esc(o.coupon)})` : ""}<br>Delivery: ${money(o.deliveryFee)}<br><b>Total: ${money(o.total)}</b><br>${esc(o.payment)} · ${esc(o.paymentStatus)}</p>` : `<p>Customer note: ${esc(o.note) || "—"}</p><p>${esc(o.payment)} — collect ${o.paymentStatus === "Paid" ? "nothing (paid)" : money(o.total)}</p>`}</body></html>`);
   w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
 }
 
@@ -581,7 +581,7 @@ function Login({ boot, onDone, retry }) {
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#F5F0E7] font-sans text-[#26231F]">
       <div className="hidden lg:flex flex-col justify-between bg-[#1F1D1A] text-white p-14">
-        <p className="font-serif text-3xl">R-Garments</p>
+        <p className="font-serif text-3xl">Elysian-Raiment</p>
         <div><p className="text-[11px] tracking-[0.35em] uppercase text-[#C9A96A] mb-4">Store administration</p><h1 className="font-serif text-5xl leading-[1.1]">Run your whole business from one quiet place.</h1></div>
         <p className="text-sm text-white/50">Products · Orders · Stock · Customers</p>
       </div>
@@ -632,7 +632,7 @@ export default function Admin() {
   const Page = PAGES[page] || Dashboard;
   const Side = ({ mini }) => (
     <div className="h-full flex flex-col bg-[#1F1D1A] text-white">
-      <div className={cx("h-16 flex items-center border-b border-white/10 shrink-0", mini ? "justify-center" : "px-5")}><span className="font-serif text-2xl">{mini ? "R" : "R-Garments"}</span>{!mini && <span className="ml-2 text-[10px] tracking-widest uppercase text-[#C9A96A]">Admin</span>}</div>
+      <div className={cx("h-16 flex items-center border-b border-white/10 shrink-0", mini ? "justify-center" : "px-5")}><span className="font-serif text-2xl">{mini ? "ER" : "Elysian-Raiment"}</span>{!mini && <span className="ml-2 text-[10px] tracking-widest uppercase text-[#C9A96A]">Admin</span>}</div>
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">{NAV.map(([k, l, I]) => <button key={k} onClick={() => go(k)} title={l} className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm transition", mini ? "justify-center" : "px-3", page === k ? "bg-[#B8975A] text-white" : "text-white/70 hover:bg-white/10 hover:text-white")}><I size={15} />{!mini && l}</button>)}</nav>
       <div className="p-2 border-t border-white/10"><button onClick={logout} title="Logout" className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm text-white/70 hover:bg-white/10 hover:text-white", mini ? "justify-center" : "px-3")}><FaSignOutAlt size={15} />{!mini && "Logout"}</button></div>
     </div>

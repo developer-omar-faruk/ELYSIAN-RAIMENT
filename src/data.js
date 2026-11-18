@@ -1,5 +1,5 @@
 // ============================================================
-// R-Garments — all configurable website data
+// Elysian-Raiment — all configurable website data
 // ============================================================
 
 // ---------- Brand ----------
@@ -106,18 +106,18 @@ export const COUPONS = {
 
 // ---------- Contact / social ----------
 export const CONTACT = {
-  phone: "+8801700000000",
-  phoneDisplay: "+880 1700-000000",
-  email: "hello@r-garments.example",
+  phone: "+8801921425563",
+  phoneDisplay: "+880 1624471890",
+  email: "elysianraiment.er@gmail.com",
   address: "House 12, Road 5, Dhanmondi, Dhaka 1205, Bangladesh",
-  facebook: "https://facebook.com/",
-  instagram: "https://instagram.com/",
-  whatsapp: "https://wa.me/8801700000000",
-  hours: "Sat–Thu, 10:00 AM – 8:00 PM",
+  facebook: "https://www.facebook.com/profile.php?id=61595891264209",
+  instagram: "https://www.instagram.com/elysianraiment/",
+  whatsapp: "https://wa.me/8801624471890",
+  hours: "24/7",
 };
 
 // ---------- Newsletter ----------
-export const NEWSLETTER = { title: "Join the R-Garments Letter", text: "New arrivals, styling notes and members-only offers — delivered occasionally, never noisy." };
+export const NEWSLETTER = { title: "Join the Elysian-Raiment Letter", text: "New arrivals, styling notes and members-only offers — delivered occasionally, never noisy." };
 
 // ---------- Size chart ----------
 export const SIZE_CHART = {
