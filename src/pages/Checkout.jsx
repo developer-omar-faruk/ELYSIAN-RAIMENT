@@ -86,7 +86,8 @@ export function Checkout() {
     const er = {};
     if (!f.name.trim()) er.name = "Please enter your full name.";
     if (!phoneOk(f.phone)) er.phone = "Enter a valid Bangladesh mobile number (e.g. 017XXXXXXXX).";
-    if (f.email && !emailOk(f.email)) er.email = "Please enter a valid email address.";
+    if (!f.email.trim()) er.email = "Please enter your email address.";
+    else if (!emailOk(f.email)) er.email = "Please enter a valid email address.";
     if (!f.address.trim()) er.address = "Please enter your delivery address.";
     if (!zone) er.zone = "Please select a delivery zone.";
     if (!lines.length) er.cart = "Your cart is empty.";
@@ -120,7 +121,7 @@ export function Checkout() {
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Full Name *" error={errors.name}><input value={f.name} onChange={set("name")} className={inp("name")} placeholder="Your full name" /></Field>
               <Field label="Phone Number *" error={errors.phone}><input value={f.phone} onChange={set("phone")} inputMode="tel" className={inp("phone")} placeholder="01XXXXXXXXX" /></Field>
-              <div className="sm:col-span-2"><Field label="Email (optional)" error={errors.email}><input value={f.email} onChange={set("email")} className={inp("email")} placeholder="you@example.com" /></Field></div>
+              <div className="sm:col-span-2"><Field label="Email *" error={errors.email}><input value={f.email} onChange={set("email")} className={inp("email")} placeholder="you@example.com" /></Field></div>
             </div>
             <label className="flex items-center gap-2 mt-4 text-sm"><input type="checkbox" checked={f.news} onChange={set("news")} className="accent-[#C5A16A] w-4 h-4" />Send me news and offers</label>
           </Step>
