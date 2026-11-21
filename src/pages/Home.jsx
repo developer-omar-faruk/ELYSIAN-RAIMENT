@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import { useStore } from "../store.jsx";
-import { Img, Stars, Reveal, Container, SectionHead, NewsletterForm, MUTED, btnLine } from "../ui.jsx";
+import { Img, Reveal, Container, SectionHead, NewsletterForm, btnLine } from "../ui.jsx";
+import { optimizeImage } from "../image.js";
 import { ProductCard, ProductGrid } from "../components.jsx";
 
 function Hero() {
@@ -21,7 +22,7 @@ function Hero() {
       <AnimatePresence mode="sync">
         <motion.div key={idx} className="absolute  inset-0" initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.1 }}>
           {s.image && <img
-            src={s.image}
+            src={optimizeImage(s.image, 1800)}
             alt=""
             loading="eager"
             fetchPriority={idx === 0 ? "high" : "auto"}
@@ -78,15 +79,14 @@ function Trending({ items }) {
 }
 
 export default function Home() {
-  const { categories, findProduct, home, reviews, newsletter } = useStore();
+  const { categories, findProduct, home, newsletter } = useStore();
   const featured = home.featuredIds.map(findProduct).filter(Boolean).slice(0, 8);
   const trending = home.trendingIds.map(findProduct).filter(Boolean);
-  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "0";
   return (
     <>
       <Hero />
       {categories.length > 0 && <section id="categories" className="py-16 md:py-24"><Container>
-        <SectionHead eyebrow="Shop by category" title="Find Your Style" text="From everyday modest wear to festive sets, explore every collection." />
+        <SectionHead eyebrow="Shop by category" title="Women's Clothing & Modest Wear" text="Explore burqa, abaya, kurti, tops and festive sets, with styles for everyday wear across Bangladesh." />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {categories.map((c, n) => (
             <Reveal key={c.slug} delay={(n % 4) * 0.06}>
@@ -108,17 +108,6 @@ export default function Home() {
         <ProductGrid items={featured} />
       </Container></section>}
       {trending.length > 0 && <Trending items={trending} />}
-      {reviews.length > 0 && <section className="py-16 md:py-24"><Container>
-        <SectionHead eyebrow="Kind words" title="Loved by Our Customers" action={<div className="flex items-center gap-3"><span className="font-serif text-5xl">{avg}</span><div><Stars value={Number(avg)} size={14} /><p className={`text-xs ${MUTED}`}>Average rating</p></div></div>} />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {reviews.map((r, n) => (
-            <Reveal key={n} delay={(n % 4) * 0.07} className="bg-white border border-[#E8DDCA] p-6 flex flex-col">
-              <Stars value={r.rating} /><p className="mt-4 text-sm leading-relaxed flex-1">"{r.text}"</p>
-              <div className="mt-5 flex items-center gap-3"><Img src={r.image} alt={r.name} className="w-10 h-10 rounded-full" /><div><p className="text-sm font-medium">{r.name}</p><p className={`text-xs ${MUTED}`}>{r.city}</p></div></div>
-            </Reveal>
-          ))}
-        </div>
-      </Container></section>}
       <section className="pb-4"><Container><div className="bg-[#242424] text-white px-6 py-14 md:py-20 text-center">
         <h2 className="font-serif text-3xl md:text-5xl">{newsletter.title}</h2>
         <p className="text-white/60 mt-3 max-w-md mx-auto text-sm">{newsletter.text}</p>

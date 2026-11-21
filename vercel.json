@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://elysian-raiment-backend.onrender.com/api/:path*"
     },
@@ -11,6 +19,10 @@
     {
       "source": "/admin/:path*",
       "destination": "/"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

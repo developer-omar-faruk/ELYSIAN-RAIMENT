@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaBars, FaTimes, FaSearch, FaShoppingBag, FaBoxOpen, FaChevronRight, FaChevronDown, FaPhoneAlt, FaFacebookF, FaInstagram, FaWhatsapp, FaRegUser } from "react-icons/fa";
 import { NAV, FOOTER_SUPPORT } from "./data.js";
 import { useStore } from "./store.jsx";
-import { money, discountPct, Img, Stars, Container, NewsletterForm, MUTED, btnDark, btnLine } from "./ui.jsx";
+import { money, discountPct, Img, Container, NewsletterForm, MUTED, btnDark, btnLine } from "./ui.jsx";
+import { optimizeImage } from "./image.js";
 
 // ---------- Product card ----------
 export function ProductCard({ p, priority = false }) {
@@ -29,7 +30,6 @@ export function ProductCard({ p, priority = false }) {
       <div className="p-3 sm:p-4 flex flex-col flex-1">
         <p className={`text-[10px] uppercase tracking-[0.2em] ${MUTED}`}>{catName(p.category)}</p>
         <Link to={`/product/${p.slug}`} className="mt-1 font-serif text-base sm:text-lg leading-snug line-clamp-2 hover:text-[#C5A16A]">{p.name}</Link>
-        <div className="flex items-center gap-2 mt-1.5"><Stars value={p.rating} /><span className={`text-xs ${MUTED}`}>({p.reviews})</span></div>
         <div className="mt-2 flex items-baseline gap-2 flex-wrap">
           <span className="font-semibold">{money(p.price)}</span>
           {p.oldPrice > p.price && <span className={`text-xs line-through ${MUTED}`}>{money(p.oldPrice)}</span>}
@@ -174,7 +174,7 @@ function Navbar() {
         <Container className="h-full flex items-center justify-between">
           <button className="lg:hidden w-10 h-10 flex items-center justify-center -ml-2" onClick={() => setDrawer(true)} aria-label="Open menu"><FaBars size={19} /></button>
           <Link to="/" className="font-serif text-xl tracking-tight absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-            {brand.logo ? <img src={brand.logo} alt={brand.name} className="h-9 object-contain" /> : brand.name}
+            {brand.logo ? <img src={optimizeImage(brand.logo, 320)} alt={brand.name} className="h-9 object-contain" /> : brand.name}
           </Link>
           <nav className="hidden lg:flex items-center gap-9">
             <div className="relative" onMouseEnter={() => setDd(true)} onMouseLeave={() => setDd(false)}>

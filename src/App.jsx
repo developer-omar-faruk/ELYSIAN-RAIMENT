@@ -1,9 +1,10 @@
 import React, { lazy, Suspense } from "react";
-import { HashRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { MotionConfig } from "framer-motion";
 import { StoreProvider, useStore } from "./store.jsx";
 import { MainLayout, ScrollManager } from "./components.jsx";
 import { Toast, Spinner, Container, btnDark } from "./ui.jsx";
+import { Seo, StorefrontSeo } from "./seo.jsx";
 
 const Admin = lazy(() => import("./Admin.jsx"));
 const Home = lazy(() => import("./pages/Home.jsx"));
@@ -35,9 +36,10 @@ function Gate({ children }) {
 function Storefront() {
   return (
     <MotionConfig reducedMotion="user">
-      <HashRouter>
+      <BrowserRouter>
         <StoreProvider>
           <Gate>
+            <StorefrontSeo />
             <ScrollManager />
             <Suspense fallback={<div className="min-h-screen bg-[#F5F0E7]"><Spinner /></div>}>
               <Routes>
@@ -50,14 +52,26 @@ function Storefront() {
                 <Route path="/order-success/:orderId" element={<MainLayout><OrderSuccess /></MainLayout>} />
                 <Route path="/my-orders" element={<MainLayout><MyOrders /></MainLayout>} />
                 <Route path="/about" element={<MainLayout><About /></MainLayout>} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </Gate>
           <Toast />
         </StoreProvider>
-      </HashRouter>
+      </BrowserRouter>
     </MotionConfig>
+  );
+}
+
+function NotFound() {
+  return (
+    <MainLayout>
+      <Container className="py-24 text-center">
+        <h1 className="font-serif text-4xl">Page not found</h1>
+        <p className="mt-3 text-sm text-[#77736C]">The page may have moved or is no longer available.</p>
+        <Link to="/shop" className={`inline-block mt-8 px-8 py-3.5 text-sm ${btnDark}`}>Browse the collection</Link>
+      </Container>
+    </MainLayout>
   );
 }
 
@@ -74,7 +88,7 @@ function CheckoutShell() {
 export default function App() {
   // The admin panel lives at /admin (it uses the URL hash for its own pages)
   if (window.location.pathname.startsWith("/admin")) {
-    return <Suspense fallback={<div className="min-h-screen bg-[#F5F0E7]"><Spinner /></div>}><Admin /></Suspense>;
+    return <><Seo title="Store administration | Elysian Raiment" noIndex /><Suspense fallback={<div className="min-h-screen bg-[#F5F0E7]"><Spinner /></div>}><Admin /></Suspense></>;
   }
   return <Storefront />;
 }

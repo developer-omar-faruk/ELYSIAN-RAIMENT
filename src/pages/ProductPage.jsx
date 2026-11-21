@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaChevronLeft, FaChevronRight, FaPlus, FaMinus } from "react-icons/fa";
 import { SIZE_CHART } from "../data.js";
 import { useStore } from "../store.jsx";
-import { money, discountPct, Img, Stars, Container, SectionHead, Breadcrumb, Accordion, btnDark } from "../ui.jsx";
+import { money, discountPct, Img, Container, SectionHead, Breadcrumb, Accordion, btnDark } from "../ui.jsx";
+import { optimizeImage } from "../image.js";
 import { ProductGrid } from "../components.jsx";
 
 const SizeTable = () => (
@@ -32,7 +33,7 @@ export default function ProductPage() {
       <div className="grid lg:grid-cols-2 gap-8 lg:gap-14">
         <div className="grid sm:grid-cols-[80px_1fr] gap-3 min-w-0">
           <div className="order-2 sm:order-1 flex sm:flex-col gap-2 overflow-x-auto sm:overflow-visible">
-            {p.images.map((s, n) => <button key={n} onClick={() => setImg(n)} className={`shrink-0 w-16 sm:w-full aspect-[4/5] border-2 ${n === img ? "border-[#C5A16A]" : "border-transparent"}`}><Img src={s} alt={`View ${n + 1}`} className="w-full h-full" /></button>)}
+            {p.images.map((s, n) => <button key={n} onClick={() => setImg(n)} className={`shrink-0 w-16 sm:w-full aspect-[4/5] border-2 ${n === img ? "border-[#C5A16A]" : "border-transparent"}`}><Img src={s} alt={`${p.name}, image ${n + 1}`} className="w-full h-full" /></button>)}
           </div>
           <div className="order-1 sm:order-2 relative aspect-[4/5] bg-white overflow-hidden">
             <AnimatePresence mode="wait"><motion.div key={img} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full rounded-sm h-full cursor-zoom-in" onClick={() => setLightbox(true)}><Img src={p.images[img]} alt={p.name} priority className="w-full rounded-sm h-full" /></motion.div></AnimatePresence>
@@ -45,7 +46,6 @@ export default function ProductPage() {
         <div className="bg-[#242424] text-white p-6 sm:p-9 self-start min-w-0">
           <p className="text-[11px] tracking-[0.3em] uppercase text-[#C5A16A]">{catName(p.category)}</p>
           <h1 className="font-serif text-3xl sm:text-4xl mt-2 leading-tight">{p.name}</h1>
-          <div className="flex items-center gap-2 mt-3"><Stars value={p.rating} size={13} /><span className="text-sm text-white/60">{p.rating} · {p.reviews} reviews</span></div>
           <div className="flex items-baseline gap-3 mt-5 flex-wrap"><span className="text-3xl font-semibold">{money(p.price)}</span>{p.oldPrice > p.price && <span className="text-white/50 line-through">{money(p.oldPrice)}</span>}{d > 0 && <span className="bg-[#C5A16A] text-[#222222] text-xs px-2 py-1">Save {d}%</span>}</div>
           {p.description && <p className="mt-5 text-sm text-white/70 leading-relaxed">{p.description}</p>}
           <p className={`mt-4 text-sm ${out ? "text-red-400" : p.stock <= 8 ? "text-[#C5A16A]" : "text-emerald-400"}`}>{out ? "Out of stock" : p.stock <= 8 ? `Only ${p.stock} left in stock` : `In stock (${p.stock} available)`}</p>
@@ -77,7 +77,7 @@ export default function ProductPage() {
         <motion.div className="fixed inset-0 z-[95] bg-black/90 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightbox(false)}>
           <button className="absolute top-4 right-4 text-white w-11 h-11" aria-label="Close"><FaTimes size={22} /></button>
           <button onClick={(e) => { e.stopPropagation(); step(-1); }} className="absolute left-3 text-white w-11 h-11" aria-label="Previous"><FaChevronLeft /></button>
-          <img src={p.images[img]} alt={p.name} className="max-h-[90vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+          <img src={optimizeImage(p.images[img], 1600)} alt={p.name} className="max-h-[90vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
           <button onClick={(e) => { e.stopPropagation(); step(1); }} className="absolute right-3 text-white w-11 h-11" aria-label="Next"><FaChevronRight /></button>
         </motion.div>)}</AnimatePresence>
       <AnimatePresence>{guide && (

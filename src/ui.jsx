@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaChevronRight, FaChevronDown, FaStar, FaRegStar, FaCheckCircle } from "react-icons/fa";
 import { BRAND } from "./data.js";
 import { useStore } from "./store.jsx";
+import { optimizeImage } from "./image.js";
 
 export const money = (n) => `${BRAND.currency}${Math.round(n || 0).toLocaleString("en-US")}`;
 export const discountPct = (p) => (p.oldPrice && p.oldPrice > p.price ? Math.round((1 - p.price / p.oldPrice) * 100) : 0);
@@ -17,8 +18,14 @@ export const field = "w-full bg-[#FAF7F1] border border-[#E8DDCA] px-4 py-3 text
 export function Img({ src, alt, className = "", priority = false }) {
   const [bad, setBad] = useState(false);
   if (bad || !src) return <div className={`bg-[#E8DDCA] flex items-center justify-center text-[#77736C] text-xs ${className}`}>{alt}</div>;
+  const optimizedSrc = optimizeImage(src);
+  const srcSet = src.includes("res.cloudinary.com") && src.includes("/image/upload/")
+    ? [480, 900].map((width) => `${optimizeImage(src, width)} ${width}w`).join(", ")
+    : undefined;
   return <img
-    src={src}
+    src={optimizedSrc}
+    srcSet={srcSet}
+    sizes={srcSet ? "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw" : undefined}
     alt={alt}
     loading={priority ? "eager" : "lazy"}
     fetchPriority={priority ? "high" : "auto"}

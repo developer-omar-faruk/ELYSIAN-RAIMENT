@@ -63,7 +63,14 @@ export function StoreProvider({ children }) {
   const findProduct = useCallback((id) => byId.get(id), [byId]);
   const catName = useCallback((slug) => categories.find((c) => c.slug === slug)?.name || "", [categories]);
 
-  const brand = { name: BRAND.name, tagline: BRAND.tagline, description: BRAND.description, ...(d?.brand || {}) };
+  const configuredBrand = d?.brand || {};
+  const brand = {
+    name: configuredBrand.name === "Elysan-Raiment" ? BRAND.name : configuredBrand.name || BRAND.name,
+    tagline: configuredBrand.tagline || BRAND.tagline,
+    description: configuredBrand.description || BRAND.description,
+    ...configuredBrand,
+  };
+  if (brand.name === "Elysan-Raiment") brand.name = BRAND.name;
   const contact = d?.contact || {};
   const policies = d?.policies || {};
   const zones = d?.zones?.length ? d.zones : DELIVERY_ZONES;
