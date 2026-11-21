@@ -45,7 +45,7 @@ export default function Shop() {
         </div>
         <aside className="hidden lg:block sticky top-24 self-start bg-white border border-[#E8DDCA] p-5">{Filters}</aside>
         <div>
-          {items.length ? <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">{items.map((p) => <ProductCard key={p.id} p={p} />)}</div> : (
+          {items.length ? <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">{items.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 2} />)}</div> : (
             <div className="text-center py-20 bg-white border border-[#E8DDCA]"><p className="font-serif text-2xl">No products found</p><p className={`text-sm mt-2 ${MUTED}`}>Try adjusting your filters.</p><button onClick={clear} className={`mt-6 px-6 py-3 text-sm ${btnDark}`}>Clear Filters</button></div>
           )}
         </div>

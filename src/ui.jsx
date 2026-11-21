@@ -14,10 +14,18 @@ export const btnDark = "bg-[#242424] text-white hover:bg-black transition-colors
 export const btnLine = "border border-[#222222] text-[#222222] hover:bg-[#222222] hover:text-white transition-colors";
 export const field = "w-full bg-[#FAF7F1] border border-[#E8DDCA] px-4 py-3 text-sm outline-none focus:border-[#C5A16A] rounded-sm";
 
-export function Img({ src, alt, className = "" }) {
+export function Img({ src, alt, className = "", priority = false }) {
   const [bad, setBad] = useState(false);
   if (bad || !src) return <div className={`bg-[#E8DDCA] flex items-center justify-center text-[#77736C] text-xs ${className}`}>{alt}</div>;
-  return <img src={src} alt={alt} loading="lazy" onError={() => setBad(true)} className={`object-cover ${className}`} />;
+  return <img
+    src={src}
+    alt={alt}
+    loading={priority ? "eager" : "lazy"}
+    fetchPriority={priority ? "high" : "auto"}
+    decoding="async"
+    onError={() => setBad(true)}
+    className={`object-cover ${className}`}
+  />;
 }
 export const Stars = ({ value, size = 12 }) => (
   <span className="inline-flex gap-0.5 text-[#C5A16A]">{[1, 2, 3, 4, 5].map((n) => (n <= Math.round(value) ? <FaStar key={n} size={size} /> : <FaRegStar key={n} size={size} />))}</span>

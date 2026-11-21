@@ -3,26 +3,56 @@ import { api } from "./api.js";
 import { BRAND, NEWSLETTER, INFO_SECTIONS, DELIVERY_ZONES } from "./data.js";
 
 const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const loadList = (k) => { const value = load(k, []); return Array.isArray(value) ? value : []; };
+const save = (k, value) => {
+  try {
+    localStorage.setItem(k, JSON.stringify(value));
+  } catch (error) {
+    console.warn(`Could not save ${k}.`, error);
+  }
+};
+const BOOTSTRAP_KEY = "rg_store_bootstrap";
+const isBootstrap = (data) => data && typeof data === "object"
+  && Array.isArray(data.products)
+  && Array.isArray(data.categories)
+  && Array.isArray(data.banners)
+  && Array.isArray(data.reviews)
+  && data.home
+  && Array.isArray(data.home.featuredIds)
+  && Array.isArray(data.home.trendingIds);
+const cacheBootstrap = (data) => {
+  try {
+    localStorage.setItem(BOOTSTRAP_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.warn("Could not cache store data.", error);
+  }
+};
 export const lineKey = (i) => `${i.id}|${i.size}|${i.color || ""}`;
 const Store = createContext(null);
 export const useStore = () => useContext(Store);
 
 export function StoreProvider({ children }) {
-  const [boot, setBoot] = useState({ data: null, loading: true, error: "" });
-  const [cart, setCart] = useState(() => load("rg_cart", []));
-  const [orders, setOrders] = useState(() => load("rg_orders", []));
+  const [boot, setBoot] = useState(() => {
+    const cached = load(BOOTSTRAP_KEY, null);
+    return { data: isBootstrap(cached) ? cached : null, loading: true, error: "" };
+  });
+  const [cart, setCart] = useState(() => loadList("rg_cart"));
+  const [orders, setOrders] = useState(() => loadList("rg_orders"));
   const [toast, setToast] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const reload = useCallback(() => {
     setBoot((b) => ({ ...b, loading: true, error: "" }));
     return api("/public/bootstrap")
-      .then((data) => setBoot({ data, loading: false, error: "" }))
+      .then((data) => {
+        cacheBootstrap(data);
+        setBoot({ data, loading: false, error: "" });
+      })
       .catch((e) => setBoot((b) => ({ ...b, loading: false, error: e.message })));
   }, []);
   useEffect(() => { reload(); }, [reload]);
-  useEffect(() => localStorage.setItem("rg_cart", JSON.stringify(cart)), [cart]);
-  useEffect(() => localStorage.setItem("rg_orders", JSON.stringify(orders)), [orders]);
+  useEffect(() => save("rg_cart", cart), [cart]);
+  useEffect(() => save("rg_orders", orders), [orders]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 2600); return () => clearTimeout(t); }, [toast]);
   const notify = useCallback((msg, type = "ok") => setToast({ msg, type, k: Date.now() }), []);
 

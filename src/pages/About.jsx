@@ -21,7 +21,7 @@ export default function About() {
     setF({ name: "", email: "", subject: "", message: "" });
   };
   const pillars = [["Our Mission", "To make beautiful, modest and modern clothing accessible to every woman in Bangladesh."], ["Our Vision", "To become the most trusted name in women's fashion, known for quality and care."], ["Product Quality", "Every garment is checked for fabric, stitching and finish before it leaves us."], ["Customer Satisfaction", "Easy exchanges, honest sizing and responsive support, always."]];
-  const items = [["Phone", contact.phone && <a href={`tel:${contact.phone}`} className="hover:text-[#C5A16A]">{contact.phoneDisplay || contact.phone}</a>], ["Email", contact.email && <a href={`mailto:${contact.email}`} className="hover:text-[#C5A16A]">{contact.email}</a>], ["Address", contact.address], ["Hours", contact.hours]].filter((i) => i[1]);
+  const items = [["Phone", contact.phone && <a key="phone" href={`tel:${contact.phone}`} className="hover:text-[#C5A16A]">{contact.phoneDisplay || contact.phone}</a>], ["Email", contact.email && <a key="email" href={`mailto:${contact.email}`} className="hover:text-[#C5A16A]">{contact.email}</a>], ["Address", contact.address], ["Hours", contact.hours]].filter((i) => i[1]);
   return (
     <>
       <Container className="py-12 md:py-20 grid lg:grid-cols-2 gap-10 items-center">

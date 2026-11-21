@@ -4,14 +4,16 @@ import { MotionConfig } from "framer-motion";
 import { StoreProvider, useStore } from "./store.jsx";
 import { MainLayout, ScrollManager } from "./components.jsx";
 import { Toast, Spinner, Container, btnDark } from "./ui.jsx";
-import Home from "./pages/Home.jsx";
-import Shop from "./pages/Shop.jsx";
-import ProductPage from "./pages/ProductPage.jsx";
-import { CartPage, Checkout } from "./pages/Checkout.jsx";
-import { OrderSuccess, MyOrders } from "./pages/Orders.jsx";
-import About from "./pages/About.jsx";
 
 const Admin = lazy(() => import("./Admin.jsx"));
+const Home = lazy(() => import("./pages/Home.jsx"));
+const Shop = lazy(() => import("./pages/Shop.jsx"));
+const ProductPage = lazy(() => import("./pages/ProductPage.jsx"));
+const CartPage = lazy(() => import("./pages/Checkout.jsx").then((m) => ({ default: m.CartPage })));
+const Checkout = lazy(() => import("./pages/Checkout.jsx").then((m) => ({ default: m.Checkout })));
+const OrderSuccess = lazy(() => import("./pages/Orders.jsx").then((m) => ({ default: m.OrderSuccess })));
+const MyOrders = lazy(() => import("./pages/Orders.jsx").then((m) => ({ default: m.MyOrders })));
+const About = lazy(() => import("./pages/About.jsx"));
 
 // Wait for the catalogue from the API before rendering any storefront page
 function Gate({ children }) {
@@ -37,18 +39,20 @@ function Storefront() {
         <StoreProvider>
           <Gate>
             <ScrollManager />
-            <Routes>
-              <Route path="/" element={<MainLayout><Home /></MainLayout>} />
-              <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
-              <Route path="/category/:categorySlug" element={<MainLayout><Shop /></MainLayout>} />
-              <Route path="/product/:slug" element={<MainLayout><ProductPage /></MainLayout>} />
-              <Route path="/cart" element={<MainLayout><CartPage /></MainLayout>} />
-              <Route path="/checkout" element={<CheckoutShell />} />
-              <Route path="/order-success/:orderId" element={<MainLayout><OrderSuccess /></MainLayout>} />
-              <Route path="/my-orders" element={<MainLayout><MyOrders /></MainLayout>} />
-              <Route path="/about" element={<MainLayout><About /></MainLayout>} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <Suspense fallback={<div className="min-h-screen bg-[#F5F0E7]"><Spinner /></div>}>
+              <Routes>
+                <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+                <Route path="/shop" element={<MainLayout><Shop /></MainLayout>} />
+                <Route path="/category/:categorySlug" element={<MainLayout><Shop /></MainLayout>} />
+                <Route path="/product/:slug" element={<MainLayout><ProductPage /></MainLayout>} />
+                <Route path="/cart" element={<MainLayout><CartPage /></MainLayout>} />
+                <Route path="/checkout" element={<CheckoutShell />} />
+                <Route path="/order-success/:orderId" element={<MainLayout><OrderSuccess /></MainLayout>} />
+                <Route path="/my-orders" element={<MainLayout><MyOrders /></MainLayout>} />
+                <Route path="/about" element={<MainLayout><About /></MainLayout>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </Gate>
           <Toast />
         </StoreProvider>

@@ -20,8 +20,15 @@ function Hero() {
     <section className="relative h-[calc(80dvh-4rem)] min-h-[520px] max-h-[820px] bg-[#242424] overflow-hidden">
       <AnimatePresence mode="sync">
         <motion.div key={idx} className="absolute  inset-0" initial={{ opacity: 0, scale: 1.06 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.1 }}>
-          {/* {s.image && <img src={s.image} alt="" className="w-full h-full  object-cover" style={{ objectPosition: s.pos }} onError={(e) => (e.currentTarget.style.display = "none")} />} */}
-          {s.image && <img src={s.image} alt="" className="w-full h-full  object-cover object-center" onError={(e) => (e.currentTarget.style.display = "none")} />}
+          {s.image && <img
+            src={s.image}
+            alt=""
+            loading="eager"
+            fetchPriority={idx === 0 ? "high" : "auto"}
+            decoding="async"
+            className="w-full h-full object-cover object-center"
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />}
           <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/30 to-transparent" />
         </motion.div>
       </AnimatePresence>

@@ -21,7 +21,7 @@ const qs = (o) => new URLSearchParams(Object.entries(o).filter(([, v]) => v !== 
 const cx = (...a) => a.filter(Boolean).join(" ");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const csvCell = (c) => { let s = String(c ?? ""); if (/^[=+\-@]/.test(s)) s = `'${s}`; return `"${s.replace(/"/g, '""')}"`; };
-const downloadCsv = (name, rows) => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + rows.map((r) => r.map(csvCell).join(",")).join("\n")], { type: "text/csv" })); a.download = name; a.click(); };
+const downloadCsv = (name, rows) => { const url = URL.createObjectURL(new Blob(["\ufeff" + rows.map((r) => r.map(csvCell).join(",")).join("\n")], { type: "text/csv" })); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 0); };
 const STATUSES = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Completed", "Cancelled", "Refunded"];
 const SC = { Pending: "bg-amber-100 text-amber-800", Confirmed: "bg-sky-100 text-sky-800", Processing: "bg-indigo-100 text-indigo-800", Shipped: "bg-violet-100 text-violet-800", Delivered: "bg-emerald-100 text-emerald-800", Completed: "bg-emerald-200 text-emerald-900", Cancelled: "bg-red-100 text-red-700", Refunded: "bg-zinc-200 text-zinc-700", Paid: "bg-emerald-100 text-emerald-800", Unpaid: "bg-amber-100 text-amber-800", Active: "bg-emerald-100 text-emerald-800", Inactive: "bg-zinc-200 text-zinc-700", Expired: "bg-red-100 text-red-700", Scheduled: "bg-sky-100 text-sky-800", Approved: "bg-emerald-100 text-emerald-800", Hidden: "bg-zinc-200 text-zinc-700", Published: "bg-emerald-100 text-emerald-800", Draft: "bg-zinc-200 text-zinc-700" };
 
@@ -37,12 +37,21 @@ function useApi(path) {
 const uploadImage = (file) => new Promise((resolve, reject) => {
   const img = new Image(), u = URL.createObjectURL(file);
   img.onload = async () => {
-    const k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement("canvas");
-    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u);
-    try { resolve((await call("/upload", { method: "POST", body: { data: c.toDataURL("image/jpeg", 0.86) } })).url); } catch (e) { reject(e); }
+    try {
+      const k = Math.min(1, 1400 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const context = c.getContext("2d");
+      if (!context) throw new Error("Could not process that image.");
+      context.drawImage(img, 0, 0, c.width, c.height);
+      const data = c.toDataURL("image/jpeg", 0.86);
+      URL.revokeObjectURL(u);
+      resolve((await call("/upload", { method: "POST", body: { data } })).url);
+    } catch (e) {
+      URL.revokeObjectURL(u);
+      reject(e);
+    }
   };
-  img.onerror = () => reject(new Error("That file is not a readable image."));
+  img.onerror = () => { URL.revokeObjectURL(u); reject(new Error("That file is not a readable image.")); };
   img.src = u;
 });
 const rangeOf = (days) => ({ from: new Date(Date.now() - (days - 1) * 864e5).toLocaleDateString("en-CA"), to: new Date().toLocaleDateString("en-CA") });
@@ -54,6 +63,9 @@ const inp = "w-full bg-white border border-[#E5DCCB] rounded-md px-3 py-2 text-s
 const KINDS = { dark: "bg-[#26231F] text-white hover:bg-black", gold: "bg-[#B8975A] text-white hover:bg-[#a6864c]", line: "border border-[#D9CDB5] bg-white hover:bg-[#F6F1E7]", red: "bg-red-600 text-white hover:bg-red-700", ghost: "hover:bg-[#F1EADB]" };
 const Btn = ({ kind = "dark", className, ...p }) => <button type="button" {...p} className={cx("inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm transition disabled:opacity-50 disabled:cursor-not-allowed", KINDS[kind], className)} />;
 const Field = ({ label, hint, children, className }) => <label className={cx("block", className)}><span className="text-[11px] uppercase tracking-widest text-[#8A8173]">{label}</span><div className="mt-1.5">{children}</div>{hint && <span className="text-xs text-[#8A8173] mt-1 block">{hint}</span>}</label>;
+function SettingsField({ f, set, sec, k, label, ...props }) {
+  return <Field label={label}><input className={inp} value={f[sec]?.[k] || ""} onChange={set(sec, k)} {...props} /></Field>;
+}
 const Card = ({ title, action, children, className }) => <section className={cx("bg-white border border-[#E8DFCE] rounded-xl shadow-[0_1px_2px_rgba(60,45,20,.04)]", className)}>{(title || action) && <div className="flex items-center justify-between gap-3 px-5 pt-4"><h3 className="font-serif text-lg">{title}</h3>{action}</div>}<div className="p-5">{children}</div></section>;
 const Badge = ({ children, k }) => <span className={cx("inline-block px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap", SC[k || children] || "bg-zinc-100 text-zinc-700")}>{children}</span>;
 const Empty = ({ text }) => <p className="text-center text-sm text-[#8A8173] py-10">{text}</p>;
@@ -86,7 +98,7 @@ const Pager = ({ page, pages, onChange }) => pages > 1 ? <div className="flex it
 const Th = ({ children, className }) => <th className={cx("text-left text-[11px] uppercase tracking-widest text-[#8A8173] font-medium px-3 py-2.5 whitespace-nowrap", className)}>{children}</th>;
 const Td = ({ children, className }) => <td className={cx("px-3 py-3 align-middle", className)}>{children}</td>;
 const Table = ({ head, children }) => <div className="overflow-x-auto -mx-5"><table className="w-full text-sm min-w-[640px]"><thead className="border-b border-[#E8DFCE]"><tr>{head}</tr></thead><tbody className="divide-y divide-[#F0E9DA]">{children}</tbody></table></div>;
-const Thumb = ({ src, className = "w-10 h-12" }) => src ? <img src={src} alt="" className={cx("object-cover rounded bg-[#F1EADB]", className)} onError={(e) => (e.currentTarget.style.visibility = "hidden")} /> : <div className={cx("rounded bg-[#F1EADB]", className)} />;
+const Thumb = ({ src, className = "w-10 h-12" }) => src ? <img src={src} alt="" loading="lazy" decoding="async" className={cx("object-cover rounded bg-[#F1EADB]", className)} onError={(e) => (e.currentTarget.style.visibility = "hidden")} /> : <div className={cx("rounded bg-[#F1EADB]", className)} />;
 const PageHead = ({ title, sub, children }) => <div className="flex flex-wrap items-end justify-between gap-3 mb-6"><div><h1 className="font-serif text-3xl">{title}</h1>{sub && <p className="text-sm text-[#8A8173] mt-1">{sub}</p>}</div><div className="flex gap-2 flex-wrap">{children}</div></div>;
 function ImageField({ value, onChange, className }) {
   const [busy, setBusy] = useState(false); const ref = useRef();
@@ -288,6 +300,9 @@ function Categories() {
 // ============================================================
 // Inventory
 // ============================================================
+function InventoryBreakdown({ title, data }) {
+  return <Card title={title}>{Object.keys(data).length ? Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => <div key={k} className="flex justify-between text-sm py-1"><span>{k}</span><b>{v}</b></div>) : <Empty text="No data" />}</Card>;
+}
 function Inventory() {
   const [tab, setTab] = useState("stock");
   const [f, setF] = useState({ q: "", status: "" }); const [hp, setHp] = useState(1); const [hq, setHq] = useState("");
@@ -296,13 +311,12 @@ function Inventory() {
   const [adj, setAdj] = useState(null); const [busy, setBusy] = useState(false);
   const d = s.data;
   const submit = async () => { setBusy(true); try { await call("/inventory/adjust", { method: "POST", body: { id: adj.p.id, vid: adj.v?._id, mode: adj.mode, value: adj.value, reason: adj.reason } }); toast("Stock updated"); setAdj(null); reload(); hreload(); } catch (e) { toast(e.message, true); } setBusy(false); };
-  const Mini = ({ title, data }) => <Card title={title}>{Object.keys(data).length ? Object.entries(data).sort((a, b) => b[1] - a[1]).map(([k, v]) => <div key={k} className="flex justify-between text-sm py-1"><span>{k}</span><b>{v}</b></div>) : <Empty text="No data" />}</Card>;
   return (
     <>
       <PageHead title="Inventory" sub="Orders deduct stock automatically; cancellations restore it."><div className="flex bg-white border border-[#E5DCCB] rounded-md p-0.5">{[["stock", "Stock"], ["history", "History"]].map(([k, l]) => <button key={k} onClick={() => setTab(k)} className={cx("px-4 py-1.5 text-sm rounded", tab === k ? "bg-[#26231F] text-white" : "hover:bg-[#F1EADB]")}>{l}</button>)}</div></PageHead>
       {tab === "stock" ? <State s={s} reload={reload}>{d && <>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4"><Stat label="Total units" value={d.summary.units} /><Stat label="Products" value={d.summary.products} /><Stat label="Low stock" value={d.summary.low} sub={`≤ ${d.summary.threshold} units`} /><Stat label="Out of stock" value={d.summary.out} /></div>
-        <div className="grid md:grid-cols-2 gap-4 mb-4"><Mini title="Stock by size" data={d.bySize} /><Mini title="Stock by colour" data={d.byColor} /></div>
+        <div className="grid md:grid-cols-2 gap-4 mb-4"><InventoryBreakdown title="Stock by size" data={d.bySize} /><InventoryBreakdown title="Stock by colour" data={d.byColor} /></div>
         <Card>
           <div className="grid sm:grid-cols-3 gap-2 mb-4"><SearchBox onChange={(v) => setF((x) => ({ ...x, q: v }))} placeholder="Search product" className="sm:col-span-2" /><select className={inp} value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}><option value="">All stock levels</option><option value="low">Low stock</option><option value="out">Out of stock</option></select></div>
           {d.items.length ? <Table head={<><Th>Product</Th><Th>Variants / sizes</Th><Th>Stock</Th><Th className="text-right">Adjust</Th></>}>
@@ -541,15 +555,14 @@ function Settings() {
   const set = (sec, k) => (e) => setF((x) => ({ ...x, [sec]: { ...x[sec], [k]: e.target.value } }));
   const zone = (i, k, v) => setF((x) => ({ ...x, zones: x.zones.map((z, n) => (n === i ? { ...z, [k]: v } : z)) }));
   const save = async () => { setBusy(true); try { await call("/settings", { method: "PUT", body: f }); toast("Settings saved"); reload(); } catch (e) { toast(e.message, true); } setBusy(false); };
-  const T = ({ sec, k, label, ...p }) => <Field label={label}><input className={inp} value={f[sec]?.[k] || ""} onChange={set(sec, k)} {...p} /></Field>;
   return (
     <>
       <PageHead title="Store Settings"><Btn kind="gold" disabled={busy || !f} onClick={save}><FaCheck size={11} />{busy ? "Saving…" : "Save settings"}</Btn></PageHead>
       <State s={s} reload={reload}>{f && <div className="grid xl:grid-cols-2 gap-4">
-        <Card title="Store"><div className="grid gap-3"><T sec="brand" k="name" label="Store name" /><T sec="brand" k="tagline" label="Tagline" /><Field label="Description"><textarea rows={3} className={inp} value={f.brand.description || ""} onChange={set("brand", "description")} /></Field><Field label="Logo"><ImageField value={f.brand.logo || ""} onChange={(v) => setF({ ...f, brand: { ...f.brand, logo: v } })} /></Field>
+        <Card title="Store"><div className="grid gap-3"><SettingsField f={f} set={set} sec="brand" k="name" label="Store name" /><SettingsField f={f} set={set} sec="brand" k="tagline" label="Tagline" /><Field label="Description"><textarea rows={3} className={inp} value={f.brand.description || ""} onChange={set("brand", "description")} /></Field><Field label="Logo"><ImageField value={f.brand.logo || ""} onChange={(v) => setF({ ...f, brand: { ...f.brand, logo: v } })} /></Field>
           <Field label="Low-stock threshold" hint="Products at or below this are flagged"><input type="number" min="0" className={cx(inp, "max-w-[120px]")} value={f.lowStock} onChange={(e) => setF({ ...f, lowStock: e.target.value })} /></Field></div></Card>
-        <Card title="Contact"><div className="grid sm:grid-cols-2 gap-3"><T sec="contact" k="phone" label="Phone (dial format)" /><T sec="contact" k="phoneDisplay" label="Phone (display)" /><T sec="contact" k="email" label="Email" /><T sec="contact" k="hours" label="Opening hours" /><div className="sm:col-span-2"><T sec="contact" k="address" label="Address" /></div></div></Card>
-        <Card title="Social links"><div className="grid gap-3">{[["facebook", "Facebook"], ["instagram", "Instagram"], ["whatsapp", "WhatsApp link"], ["youtube", "YouTube"], ["tiktok", "TikTok"]].map(([k, l]) => <T key={k} sec="contact" k={k} label={l} placeholder="https://" />)}</div></Card>
+        <Card title="Contact"><div className="grid sm:grid-cols-2 gap-3"><SettingsField f={f} set={set} sec="contact" k="phone" label="Phone (dial format)" /><SettingsField f={f} set={set} sec="contact" k="phoneDisplay" label="Phone (display)" /><SettingsField f={f} set={set} sec="contact" k="email" label="Email" /><SettingsField f={f} set={set} sec="contact" k="hours" label="Opening hours" /><div className="sm:col-span-2"><SettingsField f={f} set={set} sec="contact" k="address" label="Address" /></div></div></Card>
+        <Card title="Social links"><div className="grid gap-3">{[["facebook", "Facebook"], ["instagram", "Instagram"], ["whatsapp", "WhatsApp link"], ["youtube", "YouTube"], ["tiktok", "TikTok"]].map(([k, l]) => <SettingsField key={k} f={f} set={set} sec="contact" k={k} label={l} placeholder="https://" />)}</div></Card>
         <Card title="Delivery charges" action={<Btn kind="line" onClick={() => setF({ ...f, zones: [...f.zones, { id: "", label: "", fee: 0, note: "" }] })}><FaPlus size={10} />Zone</Btn>}>
           {f.zones.map((z, i) => <div key={i} className="grid grid-cols-[1fr_90px_auto] gap-2 mb-3 items-end"><Field label="Zone name"><input className={inp} value={z.label} onChange={(e) => zone(i, "label", e.target.value)} /></Field><Field label="Fee ৳"><input type="number" min="0" className={inp} value={z.fee} onChange={(e) => zone(i, "fee", e.target.value)} /></Field><Btn kind="ghost" aria-label="Remove zone" disabled={f.zones.length < 2} onClick={() => setF({ ...f, zones: f.zones.filter((_, n) => n !== i) })}><FaTrashAlt size={12} /></Btn><Field label="Delivery note" className="col-span-3"><input className={inp} value={z.note || ""} onChange={(e) => zone(i, "note", e.target.value)} /></Field></div>)}</Card>
         <Card title="Policies" className="xl:col-span-2"><div className="grid md:grid-cols-2 gap-3">{[["delivery", "Delivery information"], ["exchange", "Exchange policy"], ["returns", "Return policy"], ["privacy", "Privacy policy"], ["terms", "Terms & conditions"]].map(([k, l]) => <Field key={k} label={l}><textarea rows={4} className={inp} value={f.policies?.[k] || ""} onChange={set("policies", k)} /></Field>)}</div><p className="text-xs text-[#8A8173] mt-3">Delivery and exchange text appear in the product-page accordions. Other policies are stored for later use.</p></Card>
@@ -604,6 +617,15 @@ function Login({ boot, onDone, retry }) {
 // Shell
 // ============================================================
 const NAV = [["dashboard", "Dashboard", FaTachometerAlt], ["products", "Products", FaBoxOpen], ["categories", "Categories", FaTags], ["inventory", "Inventory", FaWarehouse], ["orders", "Orders", FaClipboardList], ["customers", "Customers", FaUsers], ["homepage", "Homepage Management", FaImages], ["coupons", "Coupons & Discounts", FaTicketAlt], ["reviews", "Reviews", FaStar], ["reports", "Reports & Analytics", FaChartLine], ["settings", "Store Settings", FaCog], ["profile", "Admin Profile", FaUserCircle]];
+function Sidebar({ mini, page, go, logout }) {
+  return (
+    <div className="h-full flex flex-col bg-[#1F1D1A] text-white">
+      <div className={cx("h-16 flex items-center border-b border-white/10 shrink-0", mini ? "justify-center" : "px-5")}><span className="font-serif text-2xl">{mini ? "ER" : "Elysian-Raiment"}</span>{!mini && <span className="ml-2 text-[10px] tracking-widest uppercase text-[#C9A96A]">Admin</span>}</div>
+      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">{NAV.map(([k, l, I]) => <button key={k} onClick={() => go(k)} title={l} className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm transition", mini ? "justify-center" : "px-3", page === k ? "bg-[#B8975A] text-white" : "text-white/70 hover:bg-white/10 hover:text-white")}><I size={15} />{!mini && l}</button>)}</nav>
+      <div className="p-2 border-t border-white/10"><button onClick={logout} title="Logout" className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm text-white/70 hover:bg-white/10 hover:text-white", mini ? "justify-center" : "px-3")}><FaSignOutAlt size={15} />{!mini && "Logout"}</button></div>
+    </div>
+  );
+}
 const PAGES = { dashboard: Dashboard, products: Products, categories: Categories, inventory: Inventory, orders: Orders, customers: Customers, homepage: Homepage, coupons: Coupons, reviews: Reviews, reports: Reports, settings: Settings, profile: Profile };
 
 export default function Admin() {
@@ -630,17 +652,10 @@ export default function Admin() {
   if (me === undefined) return <div className="min-h-screen bg-[#F5F0E7]"><Spinner /></div>;
   if (!me) return <><Login boot={boot} onDone={setMe} retry={init} />{Toasts}</>;
   const Page = PAGES[page] || Dashboard;
-  const Side = ({ mini }) => (
-    <div className="h-full flex flex-col bg-[#1F1D1A] text-white">
-      <div className={cx("h-16 flex items-center border-b border-white/10 shrink-0", mini ? "justify-center" : "px-5")}><span className="font-serif text-2xl">{mini ? "ER" : "Elysian-Raiment"}</span>{!mini && <span className="ml-2 text-[10px] tracking-widest uppercase text-[#C9A96A]">Admin</span>}</div>
-      <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">{NAV.map(([k, l, I]) => <button key={k} onClick={() => go(k)} title={l} className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm transition", mini ? "justify-center" : "px-3", page === k ? "bg-[#B8975A] text-white" : "text-white/70 hover:bg-white/10 hover:text-white")}><I size={15} />{!mini && l}</button>)}</nav>
-      <div className="p-2 border-t border-white/10"><button onClick={logout} title="Logout" className={cx("w-full flex items-center gap-3 rounded-md py-2.5 text-sm text-white/70 hover:bg-white/10 hover:text-white", mini ? "justify-center" : "px-3")}><FaSignOutAlt size={15} />{!mini && "Logout"}</button></div>
-    </div>
-  );
   return (
     <div className="min-h-screen bg-[#F5F0E7] text-[#26231F] font-sans">
-      <aside className={cx("hidden lg:block fixed inset-y-0 left-0 z-40 transition-all duration-200", collapsed ? "w-[72px]" : "w-64")}><Side mini={collapsed} /></aside>
-      {mobile && <><div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobile(false)} /><aside className="lg:hidden fixed inset-y-0 left-0 z-[60] w-72"><Side /></aside></>}
+      <aside className={cx("hidden lg:block fixed inset-y-0 left-0 z-40 transition-all duration-200", collapsed ? "w-[72px]" : "w-64")}><Sidebar mini={collapsed} page={page} go={go} logout={logout} /></aside>
+      {mobile && <><div className="lg:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobile(false)} /><aside className="lg:hidden fixed inset-y-0 left-0 z-[60] w-72"><Sidebar page={page} go={go} logout={logout} /></aside></>}
       <div className={cx("transition-all duration-200", collapsed ? "lg:pl-[72px]" : "lg:pl-64")}>
         <header className="sticky top-0 z-30 h-16 bg-[#FFFCF7]/90 backdrop-blur border-b border-[#E8DFCE] flex items-center justify-between px-4 sm:px-8">
           <div className="flex items-center gap-2"><button className="lg:hidden w-10 h-10 flex items-center justify-center" onClick={() => setMobile(true)} aria-label="Open menu"><FaBars /></button><button className="hidden lg:flex w-10 h-10 items-center justify-center hover:bg-[#F1EADB] rounded-md" onClick={() => setCollapsed(!collapsed)} aria-label="Toggle sidebar"><FaBars /></button><span className="font-serif text-lg hidden sm:block">{NAV.find((n) => n[0] === page)?.[1]}</span></div>

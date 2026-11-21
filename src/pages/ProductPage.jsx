@@ -35,7 +35,7 @@ export default function ProductPage() {
             {p.images.map((s, n) => <button key={n} onClick={() => setImg(n)} className={`shrink-0 w-16 sm:w-full aspect-[4/5] border-2 ${n === img ? "border-[#C5A16A]" : "border-transparent"}`}><Img src={s} alt={`View ${n + 1}`} className="w-full h-full" /></button>)}
           </div>
           <div className="order-1 sm:order-2 relative aspect-[4/5] bg-white overflow-hidden">
-            <AnimatePresence mode="wait"><motion.div key={img} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full rounded-sm h-full cursor-zoom-in" onClick={() => setLightbox(true)}><Img src={p.images[img]} alt={p.name} className="w-full rounded-sm h-full" /></motion.div></AnimatePresence>
+            <AnimatePresence mode="wait"><motion.div key={img} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full rounded-sm h-full cursor-zoom-in" onClick={() => setLightbox(true)}><Img src={p.images[img]} alt={p.name} priority className="w-full rounded-sm h-full" /></motion.div></AnimatePresence>
             {p.images.length > 1 && <>
               <button onClick={() => step(-1)} aria-label="Previous image" className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 flex items-center justify-center"><FaChevronLeft size={12} /></button>
               <button onClick={() => step(1)} aria-label="Next image" className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 flex items-center justify-center"><FaChevronRight size={12} /></button></>}

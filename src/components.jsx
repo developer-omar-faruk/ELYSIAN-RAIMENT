@@ -7,7 +7,7 @@ import { useStore } from "./store.jsx";
 import { money, discountPct, Img, Stars, Container, NewsletterForm, MUTED, btnDark, btnLine } from "./ui.jsx";
 
 // ---------- Product card ----------
-export function ProductCard({ p }) {
+export function ProductCard({ p, priority = false }) {
   const { addToCart, catName } = useStore();
   const navigate = useNavigate();
   const d = discountPct(p);
@@ -17,7 +17,7 @@ export function ProductCard({ p }) {
   return (
     <motion.article whileHover={{ y: -4 }} className="group rounded-md bg-white border border-[#C5A653] flex flex-col h-full">
       <Link to={`/product/${p.slug}`} className="relative rounded-t-md block overflow-hidden aspect-[4/5] bg-[#FAF7F1]">
-        <Img src={p.images[0]} alt={p.name} className="w-full h-full transition-transform duration-700 group-hover:scale-105" />
+        <Img src={p.images[0]} alt={p.name} priority={priority} className="w-full h-full transition-transform duration-700 group-hover:scale-105" />
         {p.images[1] && <Img src={p.images[1]} alt="" className="absolute inset-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 hidden md:block" />}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
           {out && <span className="bg-red-700 text-white text-[10px] tracking-wider uppercase px-2 py-1">Sold out</span>}
@@ -50,9 +50,28 @@ export const ProductGrid = ({ items }) => (
 function SearchModal() {
   const { searchOpen, setSearchOpen, products, catName } = useStore();
   const [q, setQ] = useState(""); const navigate = useNavigate(); const ref = useRef();
-  useEffect(() => { if (searchOpen) setTimeout(() => ref.current?.focus(), 100); else setQ(""); }, [searchOpen]);
+  useEffect(() => {
+    if (!searchOpen) { setQ(""); return; }
+    const timer = setTimeout(() => ref.current?.focus(), 100);
+    return () => clearTimeout(timer);
+  }, [searchOpen]);
   useEffect(() => { const f = (e) => e.key === "Escape" && setSearchOpen(false); window.addEventListener("keydown", f); return () => window.removeEventListener("keydown", f); }, [setSearchOpen]);
-  const results = useMemo(() => (q.trim() ? products.filter((p) => (p.name + catName(p.category)).toLowerCase().includes(q.toLowerCase())).slice(0, 6) : []), [q, products, catName]);
+  const searchIndex = useMemo(() => products.map((p) => ({
+    product: p,
+    text: (p.name + catName(p.category)).toLowerCase(),
+  })), [products, catName]);
+  const results = useMemo(() => {
+    if (!q.trim()) return [];
+    const query = q.toLowerCase();
+    const matches = [];
+    for (const item of searchIndex) {
+      if (item.text.includes(query)) {
+        matches.push(item.product);
+        if (matches.length === 6) break;
+      }
+    }
+    return matches;
+  }, [q, searchIndex]);
   const go = (path) => { setSearchOpen(false); navigate(path); };
   return (
     <AnimatePresence>
